@@ -49,7 +49,7 @@ def build_file_directory(service):
     Drive, and returns the Drive root node
     """
     results = service.files().list(
-        fields="nextPageToken, files(id,name,parents)",
+        fields="nextPageToken, files(id,name,parents,mimeType,fileExtension)",
         pageSize=1000
         ).execute()
         ### results is a dictionary
@@ -59,7 +59,7 @@ def build_file_directory(service):
 
     while next_page_token:
         results = service.files().list(
-            fields="nextPageToken, files(id,name,parents)",
+            fields="nextPageToken, files(id,name,parents,mimeType,fileExtension)",
             pageToken=next_page_token,
             pageSize=1000
             ).execute()
@@ -72,10 +72,16 @@ def build_file_directory(service):
     child_to_parents_connections = []
 
     # Create drive file object
-    drive_file_node = FileNode(None, "Google Drive")
+    drive_file_node = FileNode(None, "Google Drive", ".dir")
 
     for file in files:
-        file_node = FileNode(file["id"], file["name"])
+        # If file has a file extension
+        # TODO: sort out the files which don't have a file extension
+        if "fileExtension" in file:
+            file_node = FileNode(file["id"], file["name"], file["fileExtension"])
+        else:
+            file_node = FileNode(file["id"], file["name"], None)
+        
         file_id_to_object[file_node.file_id] = file_node
 
         if "parents" in file:
@@ -130,5 +136,5 @@ try:
 except HttpError as error:
     print(f"An error occurred: {error}")
 
-# build_file_directory(service)
-download_file("1gnPq6Wm3U877EaVAOiuzdmLmMg755XoJ")
+build_file_directory(service)
+# download_file("1gnPq6Wm3U877EaVAOiuzdmLmMg755XoJ")
