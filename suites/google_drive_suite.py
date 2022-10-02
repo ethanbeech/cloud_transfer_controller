@@ -11,6 +11,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+## File downloads
+import io
+from googleapiclient.http import MediaIoBaseDownload
+
 from tree_classes import FileNode
 
 
@@ -103,6 +107,22 @@ def build_file_directory(service):
 
     return drive_file_node
 
+def download_file(file_node):
+    # Get the file from the file ID
+    request = service.files().get_media(fileId=file_node.file_id)
+    file = io.BytesIO()
+
+    # Download file
+    downloader = MediaIoBaseDownload(file,request)
+    done = False
+    while not done:
+        status, done = downloader.next_chunk()
+        print(f"Detect {int(status.progress()*100)}.")
+
+    # Save file
+    with open("{}.{}".format(file_node.file_title,file_node.file_ext), "wb") as f:
+        f.write(file.getvalue())
+
 
 creds = authentication()
 try:
@@ -110,4 +130,5 @@ try:
 except HttpError as error:
     print(f"An error occurred: {error}")
 
-build_file_directory(service)
+# build_file_directory(service)
+download_file("1gnPq6Wm3U877EaVAOiuzdmLmMg755XoJ")
