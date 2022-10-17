@@ -1,6 +1,8 @@
 
 from msilib.schema import Error
+import os
 import os.path
+import sys
 
 from pathlib import Path
 
@@ -22,20 +24,22 @@ SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
 def authentication():
     creds = None
+    os.chdir(os.path.dirname(sys.argv[0]))
+    print(os.getcwd())
 
-    if os.path.exists("suites/credentials/google_token.json"):
-        creds = Credentials.from_authorized_user_file("suites/credentials/google_token.json", SCOPES)
+    if os.path.exists("credentials/google_token.json"):
+        creds = Credentials.from_authorized_user_file("credentials/google_token.json", SCOPES)
     # Login if no valid credentials
     if not creds or not creds.valid:
         # Add here is token can be refreshed
 
         # Else generate new token from login details
         flow = InstalledAppFlow.from_client_secrets_file(
-            "suites\credentials\google_credentials.json", SCOPES
+            "credentials/google_credentials.json", SCOPES
         )
         creds = flow.run_local_server(port=0)
         # Save credentials for the next run
-        with open("suites/credentials/google_token.json","w") as token:
+        with open("credentials/google_token.json","w") as token:
             token.write(creds.to_json())
 
     return creds
@@ -101,7 +105,8 @@ def build_file_directory(service):
         drive_error_check = False
 
         try:
-            file_id_to_object[parent_id].add_child(child_id)
+            # Add child object to parent object.children
+            file_id_to_object[parent_id].add_child(file_id_to_object[child_id])
         except KeyError:
             if drive_error_check:
                 raise Exception("Multiple drives detected")
@@ -109,7 +114,8 @@ def build_file_directory(service):
             drive_error_check = True
             drive_file_node.file_id = parent_id
             file_id_to_object[parent_id] = drive_file_node
-            file_id_to_object[parent_id].add_child(child_id)
+            # Add child object to drive node object.children
+            file_id_to_object[parent_id].add_child(file_id_to_object[child_id])
 
     return drive_file_node
 
@@ -136,5 +142,6 @@ try:
 except HttpError as error:
     print(f"An error occurred: {error}")
 
-build_file_directory(service)
+drive_file_node = build_file_directory(service)
+drive_file_node.display_tree()
 # download_file("1gnPq6Wm3U877EaVAOiuzdmLmMg755XoJ")

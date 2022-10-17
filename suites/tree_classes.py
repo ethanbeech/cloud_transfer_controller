@@ -1,5 +1,5 @@
 from typing import List
-
+from collections import deque
 
 class FileNode:
     def __init__(self, file_id, file_title, file_extension):
@@ -26,3 +26,17 @@ class FileNode:
         """
 
         self.children.add(child_node)
+    
+    def display_tree(self):
+        queue = deque()
+        queue.append(self)
+
+        while queue:
+            node = queue.popleft()
+
+            print(node)
+            for child in node.children:
+                queue.append(child)
+
+    def __str__(self):
+        return self.file_title
