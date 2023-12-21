@@ -1,3 +1,5 @@
 ctc_env/
 credentials/
 __pycache__/
+ctc-dashboard-old/
+electron-react-boilerplate/

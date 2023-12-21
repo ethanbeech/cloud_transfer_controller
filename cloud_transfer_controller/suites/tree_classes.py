@@ -40,3 +40,6 @@ class FileNode:
 
     def __str__(self):
         return self.file_title
+
+    def __str__(self):
+        return self.file_title
