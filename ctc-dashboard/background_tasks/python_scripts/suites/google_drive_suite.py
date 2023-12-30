@@ -143,4 +143,5 @@ except HttpError as error:
     print(f"An error occurred: {error}")
 
 drive_file_node = build_file_directory(service)
-drive_file_node.display_tree()
+# drive_file_node.display_tree()
+print(drive_file_node.jsonify_for_js())

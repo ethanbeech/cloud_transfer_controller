@@ -1,6 +1,5 @@
-import os
 from pathlib import Path
-from tree_classes import FileNode
+from .tree_classes import FileNode
 
 def create_initial_node(root_directory):
     base_directory = Path.home().joinpath(root_directory)
@@ -11,15 +10,10 @@ def build_file_directory(base_node: FileNode):
     current_Path = Path(base_node.file_id)
     for child in current_Path.iterdir():
         if "Coding" in child.name or "_env" in child.name:
-            print("!" + child.name)
             continue
         child_node = FileNode(str(child.resolve()), child.name, child.suffix)
         if child.is_dir():
             child_node = build_file_directory(child_node)
         base_node.children.add(child_node)
     return base_node
-
-base_node = create_initial_node("Documents")
-base_node = build_file_directory(base_node)
-base_node.display_tree()
 

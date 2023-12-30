@@ -1,5 +1,6 @@
 from typing import List
 from collections import deque
+import json
 
 class FileNode:
     def __init__(self, file_id, file_title, file_extension):
@@ -41,5 +42,14 @@ class FileNode:
     def __str__(self):
         return self.file_title
 
-    def __str__(self):
-        return self.file_title
+    def jsonify(self):
+        if not self.children:
+            children_json = "null"
+        else:
+            children_json = "[" + ",".join([_child.jsonify() for _child in self.children]) + "]"
+        file_id_val = self.file_id.replace("\\", "\\\\")
+        if not self.file_extension:
+            file_extension_val = "null"
+        else:
+            file_extension_val = f'"{self.file_extension}"'
+        return(f'\u007b"file_id":"{file_id_val}","file_title":"{self.file_title}","file_extension":{file_extension_val},"children":{children_json}\u007d')

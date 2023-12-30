@@ -6,7 +6,7 @@ import {
 } from 'electron'
 import Store from 'electron-store'
 
-export const createWindow = (
+export const createVisibleWindow = (
   windowName: string,
   options: BrowserWindowConstructorOptions
 ): BrowserWindow => {

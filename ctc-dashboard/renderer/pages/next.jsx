@@ -1,12 +1,12 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
-
 export default function NextPage() {
+
   return (
     <React.Fragment>
       <Head>
-        <title>Next - Nextron (basic-lang-typescript)</title>
+        <title>Next - Nextron (basic-lang-javascript)</title>
       </Head>
       <div>
         <p>

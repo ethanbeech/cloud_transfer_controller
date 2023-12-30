@@ -1,0 +1,21 @@
+<script>
+	const { ipcRenderer } = require('electron');
+	const { PythonShell } = require('python-shell');
+	const path = require('path');
+
+	// Returns the local file directory below baseLocalDirectory as a string in a JSON format
+	(async () => {
+		// Begin background processing
+		const { baseLocalDirectory, pyPath } = await ipcRenderer.invoke('GET_LOCAL_FILE_DIRECTORY__REQUEST_INPUT')
+		
+		PythonShell.run(path.join(__dirname, './python_scripts/get_local_file_directory.py'), {
+			pythonPath: "py",
+			args: baseLocalDirectory,
+			mode: "json",
+		}).then( results => {
+			ipcRenderer.send('GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_MAIN', { messages: results[0] })
+		})
+
+		close()
+	})();
+</script>
