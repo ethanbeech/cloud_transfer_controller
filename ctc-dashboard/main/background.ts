@@ -3,11 +3,17 @@ import { app, ipcMain, BrowserWindow } from 'electron'
 import serve from 'electron-serve'
 import { createVisibleWindow } from './helpers'
 
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+
+// Determine if production or development
+const isProd = process.env.NODE_ENV === 'production'
+
+
 // An app can only have one ipcMain instance, and only one process can have access to the instance.
 // The process with ipcMain can listen for events being triggered
 function createHiddenWindow () {
   const newWindow = new BrowserWindow({
-    show: true,
+    show: false,
     webPreferences: {
       // preload: path.join(__dirname, 'hidden_preload.js'),
       nodeIntegration: true,
@@ -60,8 +66,8 @@ ipcMain.handle('GET_LOCAL_FILE_DIRECTORY__REQUEST_INPUT', () => {
 // When receiving directory from hidden, send to renderer
 ipcMain.on('GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_MAIN', async (event, arg) => {
   const localFileDirectoryJSON = arg.messages;
-  visibleWindow.webContents.send('GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_RENDERER', localFileDirectoryJSON)
-})
+  visibleWindow.webContents.send('GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_RENDERER', localFileDirectoryJSON);
+});
 
 // ----- Miscellaneous
 ipcMain.on('CONSOLE_LOG', async (event, arg) => {
@@ -69,8 +75,6 @@ ipcMain.on('CONSOLE_LOG', async (event, arg) => {
 })
 
 // ----- Start electron app
-const isProd = process.env.NODE_ENV === 'production'
-
 if (isProd) {
   serve({ directory: 'app' })
 } else {
@@ -81,12 +85,17 @@ if (isProd) {
 ;(async () => {
   await app.whenReady()
 
+  installExtension(REACT_DEVELOPER_TOOLS)
+  .then((name) => console.log(`Added Extension:  ${name}`))
+  .catch((err) => console.log('An error occurred: ', err));
+
   // Opens the main visible electron window (not the terminal)
   visibleWindow = createVisibleWindow('main', {
     width: 1000,
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      sandbox: false,
     },
   })
 

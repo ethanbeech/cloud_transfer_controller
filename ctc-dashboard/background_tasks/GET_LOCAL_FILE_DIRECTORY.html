@@ -14,8 +14,7 @@
 			mode: "json",
 		}).then( results => {
 			ipcRenderer.send('GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_MAIN', { messages: results[0] })
+			close()
 		})
-
-		close()
 	})();
 </script>

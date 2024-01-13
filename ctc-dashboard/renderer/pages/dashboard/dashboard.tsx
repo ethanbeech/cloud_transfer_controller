@@ -1,43 +1,42 @@
 import Link from 'next/link'
-import { FileNodeComponent, FolderTreeComponent } from './fileComponents'
+import { FolderTreeComponent } from './fileComponents'
+import { useEffect, useState } from 'react';
+
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 export default function DashboardPage() {
-    const node1: FileNodeComponent= {
-        value: "node1",
-        children: [
-            {
-                value: "node2",
-                children: [
-                    {
-                        value: "node3",
-                    },
-                    {
-                        value: "node4",
-                    }
-                ]
-            },
-            {
-                value: "node5",
-            }
-        ]
-    }
-    
-    // @ts-ignore
-    window.electronAPI.getLocalFileDirectory()
-
+    // Setup inter-process communication
+    useEffect(() => {
     // @ts-ignore
     window.electronAPI.receiveLocalFileDirectory(
         (localFileDirectoryJSON) => {
             // TODO: Parse json string into file nodes
+            // @ts-ignore
+            const newBaseNode = window.fileClasses.createFileNode(localFileDirectoryJSON);
+            setBaseNode(newBaseNode)
         }
     )
 
+    // @ts-ignore
+    window.electronAPI.getLocalFileDirectory()
+    }, [])
+
+
+    // Logic begins here
+    // @ts-ignore
+    const [baseNode, setBaseNode] = useState(window.fileClasses.createFileNode({
+            file_id: "Results loading",
+            file_title: "empty",
+            file_extension: "null",
+        }))
+
     return(
-        <>
-        <FolderTreeComponent node={node1} depth={0} />
+        <DndProvider backend={HTML5Backend}>
+        <FolderTreeComponent node={baseNode} depth={0} />
         <Link href="/home">
             <a>Go to home page</a>
         </Link>
-        </>
+        </DndProvider>
     )
 }
