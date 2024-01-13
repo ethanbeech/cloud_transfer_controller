@@ -1,12 +1,13 @@
 import path from 'path'
-import { app, ipcMain, BrowserWindow } from 'electron'
+import { app, ipcMain, BrowserWindow, session } from 'electron'
 import serve from 'electron-serve'
 import { createVisibleWindow } from './helpers'
 
-import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-extension-installer';
 
 // Determine if production or development
 const isProd = process.env.NODE_ENV === 'production'
+const addDevTools = true;
 
 
 // An app can only have one ipcMain instance, and only one process can have access to the instance.
@@ -85,17 +86,22 @@ if (isProd) {
 ;(async () => {
   await app.whenReady()
 
-  installExtension(REACT_DEVELOPER_TOOLS)
+  if (!isProd && addDevTools) {
+  await installExtension(REACT_DEVELOPER_TOOLS, {
+    loadExtensionOptions: {
+      allowFileAccess: true,
+    },
+  })
   .then((name) => console.log(`Added Extension:  ${name}`))
   .catch((err) => console.log('An error occurred: ', err));
-
+  }
+  
   // Opens the main visible electron window (not the terminal)
   visibleWindow = createVisibleWindow('main', {
     width: 1000,
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      sandbox: false,
     },
   })
 

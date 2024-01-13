@@ -12,28 +12,34 @@ export type FileNodeComponent = {
     children?: FileNodeComponent[],
 }
 
-function moveFile(movedFile, oldParentFile, newParentFile) {
-  console.log(movedFile, oldParentFile, newParentFile);
-  console.log("-_-") 
+function moveFile({movedFile, oldParentNode, newParentNode}) {
+  console.log(movedFile, oldParentNode, newParentNode);
+  oldParentNode.children = null
 }
 
-export function FolderTreeComponent(props: { node: FileNode, depth: number }) {
-  const { node, depth } = props;
-  const [show_children, set_show_children] = useState(false);
+export function FolderTreeComponent(props: { node: FileNode, depth: number, parentNode?: FileNode | null, nodeDictionary: {[key: string]: any} }) {
+  let { node, depth, parentNode, nodeDictionary } = props;
+  // Only show default for base node by default
+  const [show_children, setShowChildren] = useState(depth == 0);
 
+  // Define how draggable components work
   const [{ isDragging }, drag] = useDrag(() => ({
     type: DraggableItemTypes.FILE,
+    item: node,
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging()
     })
   }))
 
-  // Continue here
-  // "ee? The drop method has the props of the Boar"
+  // Define how the receiving (dropped on) component works
   const [{ isOver }, drop] = useDrop(
     () => ({
       accept: DraggableItemTypes.FILE,
-      drop: (monitor: DropTargetMonitor) => moveFile(monitor.getItem(), monitor.getItem(), node),
+      drop: (droppedNode) => moveFile({
+        movedFile: droppedNode,
+        oldParentNode: parentNode,
+        newParentNode: node, 
+      }),
       collect: (monitor: DropTargetMonitor) => ({
         isOver: !!monitor.isOver()
       })
@@ -41,23 +47,28 @@ export function FolderTreeComponent(props: { node: FileNode, depth: number }) {
     []
   )
 
-  const handleToggleChildren = (event: React.MouseEvent) => {
+  // Stop base directory from being draggable and clickable
+  const ref_value = (depth == 0) ? (node) => drop(node) : (node) => drag(drop(node))
+
+  const handleToggleChildren = (depth == 0) ? null : 
+  (event: React.MouseEvent) => {
     event.stopPropagation();
-    set_show_children(!show_children);
+    setShowChildren(!show_children);
   }
+
   return (
-      <div style={{ borderLeft: "1px solid black", padding: "3px 5px" }} onClick={handleToggleChildren}>
+      <div style={{ borderLeft: "1px solid black" }} onClick={handleToggleChildren}>
         <div style={{ paddingLeft: `5px` }} >
-          <div ref={(node) => drop(drag(node))} style={{ display: "flex", alignItems: "center", paddingLeft: "5px" }}>
+          <div ref={ref_value} style={{ display: "flex", alignItems: "center", padding: "2px 0 2px 10px"}}>
             {node.file_extension == null ? 
             (show_children? <IoFolderOpen/> : <IoMdFolder/>) : <IoDocumentOutline />}
             <span style={{ paddingLeft: "5px" }}>{node.file_id}</span>
           </div>
           {show_children &&
-            <ul className="border-2 border-gray-300 rounded">
+            <ul>
               { node.children?.map((child_node) => (
                 <li className="px-4 py-2 bg-gray-200 text-sm font-semibold">
-                <FolderTreeComponent key={child_node.file_id} node={child_node} depth={depth + 1}/>
+                <FolderTreeComponent key={child_node.file_id} node={child_node} depth={depth + 1} parentNode={node} nodeDictionary={nodeDictionary}/>
                 </li>
               ))
               }
@@ -67,3 +78,5 @@ export function FolderTreeComponent(props: { node: FileNode, depth: number }) {
       </div>
   )
 }
+
+// TODO: get drop to interact with dictionary and relocate all the children from the original parent to the new one

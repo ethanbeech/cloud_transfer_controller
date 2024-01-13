@@ -1,17 +1,18 @@
 {
   "private": true,
-  "name": "my-nextron-app",
-  "description": "My application description",
+  "name": "cloud-transfer-controller",
+  "description": "Cloud Transfer Controller",
   "version": "1.0.0",
-  "author": "Yoshihide Shiono <shiono.yoshihide@gmail.com>",
+  "author": "Ethan Beech",
   "main": "app/background.js",
   "scripts": {
-    "dev": "nextron",
+    "dev": "nextron -- --no-sandbox",
     "build": "nextron build",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "autoprefixer": "^10.4.16",
+    "electron-extension-installer": "^1.2.0",
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
     "prefixer": "^0.0.3",
