@@ -14,14 +14,13 @@ export default function DashboardPage() {
             // TODO: Parse json string into file nodes
             // @ts-ignore
             const newBaseNode = window.fileClasses.createFileNode(localFileDirectoryJSON);
-            setBaseNode(newBaseNode)
+            setBaseNode(newBaseNode);
         }
     )
 
     // @ts-ignore
     window.electronAPI.getLocalFileDirectory()
     }, [])
-
 
     // Logic begins here
     // @ts-ignore
@@ -33,7 +32,7 @@ export default function DashboardPage() {
 
     return(
         <DndProvider backend={HTML5Backend}>
-        <FolderTreeComponent node={baseNode} depth={0} />
+        <FolderTreeComponent key={"node_0"} node={baseNode} depth={0} currentPath={baseNode.file_id} pass_key={"node_0"} baseNode={baseNode} setBaseNode={setBaseNode}/>
         <Link href="/home">
             <a>Go to home page</a>
         </Link>
