@@ -3,12 +3,14 @@ const { contextBridge, ipcRenderer } = require('electron')
 // Define tree classes
 class FileNode {
   file_id: string;
+  current_path: string;
   file_title: string;
   file_extension: string | null;
   children: FileNode[];
 
   constructor(constructor_values: Record<string, any> | {file_id: string, file_title: string, file_extension: string | null}) {  
     this.file_id = constructor_values.file_id;
+    this.current_path = constructor_values.file_id;
     this.file_title = constructor_values.file_title;
     this.file_extension = constructor_values.file_extension;
 

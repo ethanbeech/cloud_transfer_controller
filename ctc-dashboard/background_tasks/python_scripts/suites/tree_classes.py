@@ -14,6 +14,7 @@ class FileNode:
         children: a set of current child File objects
         """
         self.file_id = file_id
+        self.current_path = file_id
         self.file_title = file_title
         self.file_extension = file_extension
         self.children = set()
@@ -52,4 +53,4 @@ class FileNode:
             file_extension_val = "null"
         else:
             file_extension_val = f'"{self.file_extension}"'
-        return(f'\u007b"file_id":"{file_id_val}","file_title":"{self.file_title}","file_extension":{file_extension_val},"children":{children_json}\u007d')
+        return(f'\u007b"file_id":"{file_id_val}","current_path":"{file_id_val}","file_title":"{self.file_title}","file_extension":{file_extension_val},"children":{children_json}\u007d')

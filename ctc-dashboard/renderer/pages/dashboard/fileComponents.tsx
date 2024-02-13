@@ -6,6 +6,7 @@ import { IoFolderOpen } from "react-icons/io5";
 
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
 import { DraggableItemTypes } from "./constants";
+import { relative } from "path";
 
 export type FileNodeComponent = {
     value: string,
@@ -18,13 +19,13 @@ function getParentFilePathAndName(filePath: string) {
   return parts.slice(0, -1).join('\\')
 }
 
-export function FolderTreeComponent(props: { node: FileNode, depth: number, currentPath: string[], pass_key: string, baseNode: FileNode, setBaseNode}) {
+export function FolderTreeComponent(props: { node: FileNode, depth: number, currentPath: string, pass_key: string, baseNode: FileNode, setBaseNode}) {
   let { node, depth, currentPath, pass_key, baseNode, setBaseNode } = props;
 
   function moveFile({movedFile_originalTree, newParentNode_originalTree}) {
-    const movedFilePath = movedFile_originalTree.file_id
-    const baseFilePath = baseNode.file_id
-    const newParentFilePath = newParentNode_originalTree.file_id
+    const movedFilePath = movedFile_originalTree.current_path
+    const baseFilePath = baseNode.current_path
+    const newParentFilePath = newParentNode_originalTree.current_path
 
     if (!movedFilePath.startsWith(baseFilePath)) {
       console.log("ERROR ctc_001: inconsistent base file path")
@@ -34,17 +35,17 @@ export function FolderTreeComponent(props: { node: FileNode, depth: number, curr
     // Find parent node
     let relativeFilePath = movedFilePath.replace(baseFilePath, "").slice(1)
     let path_steps = relativeFilePath.split("\\")
-    const file_id_end = path_steps.pop()
+    const current_path_end = path_steps.pop()
 
     // Create shallow copy of the base node to trigger re-render when setting state later
     let baseNode_copy = { ...baseNode }
     let parentNode = baseNode_copy;
-    let target_id = baseNode_copy.file_id
+    let target_id = baseNode_copy.current_path
     for (const step of path_steps) {
       target_id += "\\"
       target_id += step
       for (const child_node of parentNode.children) {
-        if (child_node.file_id == target_id) {
+        if (child_node.current_path == target_id) {
           parentNode = child_node
           break
         }
@@ -52,12 +53,12 @@ export function FolderTreeComponent(props: { node: FileNode, depth: number, curr
     }
 
     // Remove node from old parent
-    const index = parentNode.children.findIndex((child) => child.file_id === movedFilePath);
+    const index = parentNode.children.findIndex((child) => child.current_path === movedFilePath);
 
     let removedFileNode
 
     if (index !== -1) {
-      removedFileNode = parentNode.children.splice(index, 1)
+      removedFileNode = parentNode.children.splice(index, 1)[0]
     } else {
       console.log("ERROR ctc_002: Moved file's file ID not found")
       console.log(`Cannot remove: ${movedFilePath}`)
@@ -69,12 +70,12 @@ export function FolderTreeComponent(props: { node: FileNode, depth: number, curr
     path_steps = relativeFilePath.split("\\")
 
     let newParentNode = baseNode_copy;
-    target_id = baseNode_copy.file_id
+    target_id = baseNode_copy.current_path
     for (const step of path_steps) {
       target_id += "\\"
       target_id += step
-      for (const child_node of parentNode.children) {
-        if (child_node.file_id == target_id) {
+      for (const child_node of newParentNode.children) {
+        if (child_node.current_path == target_id) {
           newParentNode = child_node
           break
         }
@@ -82,9 +83,8 @@ export function FolderTreeComponent(props: { node: FileNode, depth: number, curr
     }
 
     // Add moved node to new parent node's children
-    removedFileNode.file_id = newParentNode.file_id + "\\" + file_id_end
-    newParentNode.children.push(removedFileNode[0])
-    console.log(newParentNode.file_id)
+    removedFileNode.current_path = newParentNode.current_path + "\\" + current_path_end
+    newParentNode.children.push(removedFileNode)
 
     // Set state to update the base node and thus the tree
     setBaseNode(baseNode_copy)
@@ -117,8 +117,18 @@ export function FolderTreeComponent(props: { node: FileNode, depth: number, curr
     []
   )
 
-  // Stop base directory from being draggable and clickable
-  const ref_value = (depth == 0) ? (node) => drop(node) : (node) => drag(drop(node))
+  // Apply drag and drop rules
+  let ref_value;
+  if (depth == 0) {
+    // Stop base directory from being draggable and clickable
+    ref_value = (node) => drop(node)
+  } else if (node.file_extension === null) {
+    // Shouldn't be able to drop onto files
+    ref_value = (node) => drag(drop(node))
+  } else {
+    ref_value = (node) => drag(node)
+  }
+  // const ref_value = (depth == 0) ? (node) => drop(node) : (node) => drag(drop(node))
 
   let child_counter = 0;
 
@@ -137,15 +147,15 @@ export function FolderTreeComponent(props: { node: FileNode, depth: number, curr
       <div style={{ borderLeft: "1px solid black" }} onClick={handleToggleChildren}>
         <div style={{ paddingLeft: `5px` }} >
           <div ref={ref_value} style={{ display: "flex", alignItems: "center", padding: "2px 0 2px 10px"}}>
-            {node.file_extension == null ? 
+            {node.file_extension === null ? 
             (show_children? <IoFolderOpen/> : <IoMdFolder/>) : <IoDocumentOutline />}
-            <span style={{ paddingLeft: "5px" }}>{node.file_id}</span>
+            <span style={{ paddingLeft: "5px" }}>{node.current_path}</span>
           </div>
           {show_children &&
             <ul>
               { node.children?.map((child_node) => (
                 <li className="px-4 py-2 bg-gray-200 text-sm font-semibold">
-                <FolderTreeComponent key={generate_child_key()} node={child_node} depth={depth + 1} currentPath={[child_node.file_id]} pass_key={generate_child_key()} 
+                <FolderTreeComponent key={generate_child_key()} node={child_node} depth={depth + 1} currentPath={child_node.current_path} pass_key={generate_child_key()} 
                 baseNode={baseNode} setBaseNode={setBaseNode}/>
                 </li>
               ))
@@ -158,3 +168,4 @@ export function FolderTreeComponent(props: { node: FileNode, depth: number, curr
 }
 
 // TODO: fix children keys
+// TODO: Moving files to 'My Games' puts them under Documents instead
