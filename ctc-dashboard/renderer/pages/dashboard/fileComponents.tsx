@@ -8,6 +8,8 @@ import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
 import { DraggableItemTypes } from "./constants";
 import { relative } from "path";
 
+import { v4 as uuidv4 } from 'uuid';
+
 export type FileNodeComponent = {
     value: string,
     children?: FileNodeComponent[],
@@ -19,13 +21,16 @@ function getParentFilePathAndName(filePath: string) {
   return parts.slice(0, -1).join('\\')
 }
 
-export function FolderTreeComponent(props: { node: FileNode, depth: number, currentPath: string, pass_key: string, baseNode: FileNode, setBaseNode}) {
-  let { node, depth, currentPath, pass_key, baseNode, setBaseNode } = props;
+export function FolderTreeComponent(props: { node: FileNode, depth: number, currentPath: string, baseNode: FileNode, setBaseNode, setActionLog}) {
+  let { node, depth, currentPath, baseNode, setBaseNode, setActionLog } = props;
 
   function moveFile({movedFile_originalTree, newParentNode_originalTree}) {
     const movedFilePath = movedFile_originalTree.current_path
     const baseFilePath = baseNode.current_path
     const newParentFilePath = newParentNode_originalTree.current_path
+
+    console.log(movedFilePath);
+    console.log(newParentFilePath);
 
     if (!movedFilePath.startsWith(baseFilePath)) {
       console.log("ERROR ctc_001: inconsistent base file path")
@@ -83,8 +88,18 @@ export function FolderTreeComponent(props: { node: FileNode, depth: number, curr
     }
 
     // Add moved node to new parent node's children
+    // ensuring no error if parent node's original children attribute is null
     removedFileNode.current_path = newParentNode.current_path + "\\" + current_path_end
-    newParentNode.children.push(removedFileNode)
+    if (newParentNode.children != null) {
+      newParentNode.children.push(removedFileNode)
+    } else {
+      newParentNode.children = [removedFileNode];
+    }
+
+    // Update action log
+    setActionLog(prevActionLog => (
+      {...prevActionLog,
+      [removedFileNode.file_id]: newParentNode.file_id}))
 
     // Set state to update the base node and thus the tree
     setBaseNode(baseNode_copy)
@@ -130,13 +145,6 @@ export function FolderTreeComponent(props: { node: FileNode, depth: number, curr
   }
   // const ref_value = (depth == 0) ? (node) => drop(node) : (node) => drag(drop(node))
 
-  let child_counter = 0;
-
-  const generate_child_key = () => {
-    child_counter++;  
-    return (pass_key + "_" + Math.floor(child_counter / 2).toString());
-  }
-
   const handleToggleChildren = (depth == 0) ? null : 
   (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -155,8 +163,8 @@ export function FolderTreeComponent(props: { node: FileNode, depth: number, curr
             <ul>
               { node.children?.map((child_node) => (
                 <li className="px-4 py-2 bg-gray-200 text-sm font-semibold">
-                <FolderTreeComponent key={generate_child_key()} node={child_node} depth={depth + 1} currentPath={child_node.current_path} pass_key={generate_child_key()} 
-                baseNode={baseNode} setBaseNode={setBaseNode}/>
+                <FolderTreeComponent key={uuidv4()} node={child_node} depth={depth + 1} currentPath={child_node.current_path} 
+                baseNode={baseNode} setBaseNode={setBaseNode} setActionLog={setActionLog}/>
                 </li>
               ))
               }

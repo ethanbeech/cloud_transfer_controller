@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
+import { v4 as uuidv4 } from 'uuid';
+
 export default function DashboardPage() {
     // Setup inter-process communication
     useEffect(() => {
@@ -30,9 +32,12 @@ export default function DashboardPage() {
             file_extension: "null",
         }))
 
+    const [actionLog, setActionLog] = useState({})
+
     return(
         <DndProvider backend={HTML5Backend}>
-        <FolderTreeComponent key={"node_0"} node={baseNode} depth={0} currentPath={baseNode.file_id} pass_key={"node_0"} baseNode={baseNode} setBaseNode={setBaseNode}/>
+        <FolderTreeComponent key={uuidv4()} node={baseNode} depth={0} currentPath={baseNode.file_id} baseNode={baseNode} setBaseNode={setBaseNode}
+        setActionLog={setActionLog}/>
         <Link href="/home">
             <a>Go to home page</a>
         </Link>
