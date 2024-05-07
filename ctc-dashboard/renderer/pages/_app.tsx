@@ -1,9 +1,13 @@
 // pages/_app.js or pages/_app.tsx
 
-import './styles.css'; // Import your global CSS file
 import { AppProps } from 'next/app';
+import "bootstrap/dist/css/bootstrap.min.css";
+import { useEffect } from "react";
 
 function MyApp({ Component, pageProps }: AppProps) {
+  useEffect(() => {
+    require("bootstrap/dist/css/bootstrap.min.css");
+  }, []);
   return <Component {...pageProps} />;
 }
 
