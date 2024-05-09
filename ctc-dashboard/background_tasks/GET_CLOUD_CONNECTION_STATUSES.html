@@ -1,0 +1,21 @@
+<script>
+	const { ipcRenderer } = require('electron');
+	const { PythonShell } = require('python-shell');
+	const path = require('path');
+
+	// Returns the local file directory below baseLocalDirectory as a string in a JSON format
+	(async () => {
+		// Begin background processing	
+		PythonShell.run(path.join(__dirname, './python_scripts/homepage_google_auth.py'), {
+			// pythonPath: path.join(__dirname, 'py'),
+			pythonPath: path.join(__dirname, "python_scripts/ctc_env/Scripts/python.exe"),
+			mode: "json",
+		}).then( results => {
+			ipcRenderer.send('HOMEPAGE_CLOUD_AUTH__SEND_CONNECTION_RESULT_TO_MAIN', { 
+				cloudService: "googleConnection",
+				connectionResult: results[0]
+			 })
+			close()
+		})
+	})();
+</script>

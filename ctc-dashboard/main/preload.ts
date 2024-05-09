@@ -8,7 +8,7 @@ class FileNode {
   file_extension: string | null;
   children: FileNode[];
 
-  constructor(constructor_values: Record<string, any> | {file_id: string, file_title: string, file_extension: string | null}) {  
+  constructor(constructor_values: Record<string, any> | { file_id: string, file_title: string, file_extension: string | null }) {
     this.file_id = constructor_values.file_id;
     this.current_path = constructor_values.file_id;
     this.file_title = constructor_values.file_title;
@@ -16,7 +16,7 @@ class FileNode {
 
     if ('children' in constructor_values) {
       this.children = constructor_values.children;
-    } else if (this.isValuesNotJSON(constructor_values)) { 
+    } else if (this.isValuesNotJSON(constructor_values)) {
       this.children = []
     } else {
       console.log("SUCCESS")
@@ -26,11 +26,11 @@ class FileNode {
   }
 
   add_child(child: FileNode) {
-      this.children.push(child);
+    this.children.push(child);
   }
 
-  create_child( file_id: string, file_title: string, file_extension: string | null) {
-      this.children.push(new FileNode( {file_id, file_title, file_extension} ))
+  create_child(file_id: string, file_title: string, file_extension: string | null) {
+    this.children.push(new FileNode({ file_id, file_title, file_extension }))
   }
 
   private isValuesNotJSON(obj: Record<string, any> | { file_id: string, file_title: string, file_extension: string | null }): boolean {
@@ -43,9 +43,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // ----- One-way Communcation
   // Renderer to Main
   getLocalFileDirectory: () => ipcRenderer.send("GET_LOCAL_FILE_DIRECTORY"),
+  getCloudConnectionStatuses: () => ipcRenderer.send("GET_CLOUD_CONNECTION_STATUSES"),
 
   // Main to renderer
-  receiveLocalFileDirectory: (callback) => ipcRenderer.on("GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_RENDERER", (_event, localFileDirectoryJSON) => callback(localFileDirectoryJSON)),
+  receiveLocalFileDirectory: (callback) => ipcRenderer.on("GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_RENDERER",
+  (event, localFileDirectoryJSON) => callback(localFileDirectoryJSON)),
+
+  receiveCloudConnectionStatus: (callback) => ipcRenderer.on("HOMEPAGE_CLOUD_AUTH__SEND_CONNECTION_RESULT_TO_RENDERER",
+  (event, cloudService, connectionStatus) => callback(cloudService, connectionStatus)),
 
   // Any to Main
   consoleLog: (logStatement) => ipcRenderer.send("CONSOLE_LOG", { message: logStatement }),
@@ -58,5 +63,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
 })
 
 contextBridge.exposeInMainWorld('fileClasses', {
-  createFileNode: (vals: Record<string, any> | {file_id: string, file_title: string, file_extension: string | null}) => new FileNode({...vals, show: false}),
+  createFileNode: (vals: Record<string, any> | { file_id: string, file_title: string, file_extension: string | null }) => new FileNode({ ...vals, show: false }),
 })

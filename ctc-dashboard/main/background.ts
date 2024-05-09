@@ -14,9 +14,8 @@ const addDevTools = true;
 // The process with ipcMain can listen for events being triggered
 function createHiddenWindow () {
   const newWindow = new BrowserWindow({
-    show: false,
+    show: true,
     webPreferences: {
-      // preload: path.join(__dirname, 'hidden_preload.js'),
       nodeIntegration: true,
       contextIsolation: false,
     }
@@ -41,7 +40,8 @@ let hiddenWindows: { [key: string]: BrowserWindow | null } = {
 
 // Get local file directory and return to the renderer
 ipcMain.on('GET_LOCAL_FILE_DIRECTORY', async (event, arg) => {
-  console.log("PROCESS START RECEIVED")
+  console.log("PROCESS START RECEIVED: 001")
+  // TODO: Add check to ensure no current process on local
   let backgroundFileUrl = path.join(__dirname, `../background_tasks/GET_LOCAL_FILE_DIRECTORY.html`);
 
   hiddenWindows["local"] = await createHiddenWindow();
@@ -51,10 +51,25 @@ ipcMain.on('GET_LOCAL_FILE_DIRECTORY', async (event, arg) => {
   hiddenWindows["local"].webContents.openDevTools();
 
   hiddenWindows["local"].on('closed', () => {
-    console.log("CLOSED")
+    console.log("CLOSED PROCESS: 001")
 		hiddenWindows["local"] = null;
 	});
 })
+
+ipcMain.on('GET_CLOUD_CONNECTION_STATUSES', async () => {
+  console.log("PROCESS START RECEIVED: 002");
+  // TODO: Add check to ensure no current process on google
+  let backgroundFileUrl = path.join(__dirname, '../background_tasks/GET_CLOUD_CONNECTION_STATUSES.html');
+
+  hiddenWindows['google'] = await createHiddenWindow();
+  hiddenWindows['google'].loadURL(backgroundFileUrl);
+  hiddenWindows['google'].webContents.openDevTools();
+
+  hiddenWindows['google'].on('closed', () => {
+    console.log('CLOSED PROCESS: 002');
+    hiddenWindows['google'] = null;
+  });
+}),
 
 // Provide hidden with base local file directory
 ipcMain.handle('GET_LOCAL_FILE_DIRECTORY__REQUEST_INPUT', () => {
@@ -65,10 +80,17 @@ ipcMain.handle('GET_LOCAL_FILE_DIRECTORY__REQUEST_INPUT', () => {
 })
 
 // When receiving directory from hidden, send to renderer
-ipcMain.on('GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_MAIN', async (event, arg) => {
-  const localFileDirectoryJSON = arg.messages;
+ipcMain.on('GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_MAIN', async (event, args) => {
+  const localFileDirectoryJSON = args.messages;
   visibleWindow.webContents.send('GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_RENDERER', localFileDirectoryJSON);
 });
+
+// When receiving connection results from hidden, send to renderer
+ipcMain.on('HOMEPAGE_CLOUD_AUTH__SEND_CONNECTION_RESULT_TO_MAIN', async (event, args) => {
+  const cloudService = args.cloudService;
+  const connectionStatus = args.connectionResult;
+  visibleWindow.webContents.send('HOMEPAGE_CLOUD_AUTH__SEND_CONNECTION_RESULT_TO_RENDERER', cloudService, connectionStatus)
+})
 
 // ----- Miscellaneous
 ipcMain.on('CONSOLE_LOG', async (event, arg) => {

@@ -17,29 +17,30 @@ from googleapiclient.errors import HttpError
 import io
 from googleapiclient.http import MediaIoBaseDownload
 
-from tree_classes import FileNode
+from suites.tree_classes import *
 
 
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
-def authentication():
+def google_authentication():
     creds = None
     os.chdir(os.path.dirname(sys.argv[0]))
-    print(os.getcwd())
+    token_directory = "credentials/google_token.json"
+    credentials_directory = "credentials/google_credentials.json"
 
-    if os.path.exists("credentials/google_token.json"):
-        creds = Credentials.from_authorized_user_file("credentials/google_token.json", SCOPES)
+    if os.path.exists(token_directory):
+        creds = Credentials.from_authorized_user_file(token_directory, SCOPES)
     # Login if no valid credentials
     if not creds or not creds.valid:
         # Add here is token can be refreshed
 
         # Else generate new token from login details
         flow = InstalledAppFlow.from_client_secrets_file(
-            "credentials/google_credentials.json", SCOPES
+            credentials_directory, SCOPES
         )
         creds = flow.run_local_server(port=0)
         # Save credentials for the next run
-        with open("credentials/google_token.json","w") as token:
+        with open(token_directory,"w") as token:
             token.write(creds.to_json())
 
     return creds
@@ -119,7 +120,7 @@ def build_file_directory(service):
 
     return drive_file_node
 
-def download_file(file_node):
+def download_file(service, file_node):
     # Get the file from the file ID
     request = service.files().get_media(fileId=file_node.file_id)
     file = io.BytesIO()
@@ -134,14 +135,3 @@ def download_file(file_node):
     # Save file
     with open("{}.{}".format(file_node.file_title,file_node.file_ext), "wb") as f:
         f.write(file.getvalue())
-
-
-creds = authentication()
-try:
-    service = build_service(creds)
-except HttpError as error:
-    print(f"An error occurred: {error}")
-
-drive_file_node = build_file_directory(service)
-# drive_file_node.display_tree()
-print(drive_file_node.jsonify_for_js())

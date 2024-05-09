@@ -13,7 +13,6 @@ export default function DashboardPage() {
 		// @ts-ignore
 		window.electronAPI.receiveLocalFileDirectory(
 			(localFileDirectoryJSON) => {
-				// TODO: Parse json string into file nodes
 				// @ts-ignore
 				const newBaseNode = window.fileClasses.createFileNode(localFileDirectoryJSON);
 				setBaseNode(newBaseNode);

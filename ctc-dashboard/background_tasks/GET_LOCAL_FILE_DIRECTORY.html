@@ -7,7 +7,6 @@
 	(async () => {
 		// Begin background processing
 		const { baseLocalDirectory, pyPath } = await ipcRenderer.invoke('GET_LOCAL_FILE_DIRECTORY__REQUEST_INPUT')
-		
 		PythonShell.run(path.join(__dirname, './python_scripts/get_local_file_directory.py'), {
 			pythonPath: "py",
 			args: baseLocalDirectory,
