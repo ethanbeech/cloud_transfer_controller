@@ -40,7 +40,7 @@ let hiddenWindows: { [key: string]: BrowserWindow | null } = {
 
 // Get local file directory and return to the renderer
 ipcMain.on('GET_LOCAL_FILE_DIRECTORY', async (event, arg) => {
-  console.log("PROCESS START RECEIVED: 001")
+  console.log("PROCESS START RECEIVED: A001")
   // TODO: Add check to ensure no current process on local
   let backgroundFileUrl = path.join(__dirname, `../background_tasks/GET_LOCAL_FILE_DIRECTORY.html`);
 
@@ -51,13 +51,31 @@ ipcMain.on('GET_LOCAL_FILE_DIRECTORY', async (event, arg) => {
   hiddenWindows["local"].webContents.openDevTools();
 
   hiddenWindows["local"].on('closed', () => {
-    console.log("CLOSED PROCESS: 001")
+    console.log("CLOSED PROCESS: A001")
 		hiddenWindows["local"] = null;
 	});
 })
 
+// Get google file directory and return to the renderer
+ipcMain.on('GET_GOOGLE_FILE_DIRECTORY', async (event, arg) => {
+  console.log("PROCESS START RECEIVED: A002")
+  // TODO: Add check to ensure no current process on local
+  let backgroundFileUrl = path.join(__dirname, `../background_tasks/GET_GOOGLE_FILE_DIRECTORY.html`);
+
+  hiddenWindows["google"] = await createHiddenWindow();
+  
+  hiddenWindows["google"].loadURL(backgroundFileUrl)
+
+  hiddenWindows["google"].webContents.openDevTools();
+
+  hiddenWindows["google"].on('closed', () => {
+    console.log("CLOSED PROCESS: A002")
+		hiddenWindows["google"] = null;
+	});
+})
+
 ipcMain.on('GET_CLOUD_CONNECTION_STATUSES', async () => {
-  console.log("PROCESS START RECEIVED: 002");
+  console.log("PROCESS START RECEIVED: B001");
   // TODO: Add check to ensure no current process on google
   let backgroundFileUrl = path.join(__dirname, '../background_tasks/GET_CLOUD_CONNECTION_STATUSES.html');
 
@@ -66,7 +84,7 @@ ipcMain.on('GET_CLOUD_CONNECTION_STATUSES', async () => {
   hiddenWindows['google'].webContents.openDevTools();
 
   hiddenWindows['google'].on('closed', () => {
-    console.log('CLOSED PROCESS: 002');
+    console.log('CLOSED PROCESS: B001');
     hiddenWindows['google'] = null;
   });
 }),
@@ -80,9 +98,12 @@ ipcMain.handle('GET_LOCAL_FILE_DIRECTORY__REQUEST_INPUT', () => {
 })
 
 // When receiving directory from hidden, send to renderer
-ipcMain.on('GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_MAIN', async (event, args) => {
-  const localFileDirectoryJSON = args.messages;
-  visibleWindow.webContents.send('GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_RENDERER', localFileDirectoryJSON);
+ipcMain.on('GET_FILE_DIRECTORY__SEND_DIRECTORY_TO_MAIN', async (event, args) => {
+  const status = args.status;
+  const cloudService = args.cloudService;
+  const fileDirectoryJSON = args.results;
+  console.log(args)
+  visibleWindow.webContents.send('GET_FILE_DIRECTORY__SEND_DIRECTORY_TO_RENDERER', status, cloudService, fileDirectoryJSON);
 });
 
 // When receiving connection results from hidden, send to renderer

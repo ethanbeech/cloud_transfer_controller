@@ -43,11 +43,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // ----- One-way Communcation
   // Renderer to Main
   getLocalFileDirectory: () => ipcRenderer.send("GET_LOCAL_FILE_DIRECTORY"),
+  getGoogleFileDirectory: () => ipcRenderer.send("GET_GOOGLE_FILE_DIRECTORY"),
   getCloudConnectionStatuses: () => ipcRenderer.send("GET_CLOUD_CONNECTION_STATUSES"),
 
   // Main to renderer
-  receiveLocalFileDirectory: (callback) => ipcRenderer.on("GET_LOCAL_FILE_DIRECTORY__SEND_DIRECTORY_TO_RENDERER",
-  (event, localFileDirectoryJSON) => callback(localFileDirectoryJSON)),
+  receiveFileDirectory: (callback) => ipcRenderer.on("GET_FILE_DIRECTORY__SEND_DIRECTORY_TO_RENDERER",
+  (event, callStatus, cloudService, fileDirectoryJSON) => callback(callStatus, cloudService, fileDirectoryJSON)),
 
   receiveCloudConnectionStatus: (callback) => ipcRenderer.on("HOMEPAGE_CLOUD_AUTH__SEND_CONNECTION_RESULT_TO_RENDERER",
   (event, cloudService, connectionStatus) => callback(cloudService, connectionStatus)),

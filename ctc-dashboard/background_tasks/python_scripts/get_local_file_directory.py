@@ -6,5 +6,6 @@ if __name__ == "__main__":
 
     base_node = create_initial_node(base_file_path)
     base_node = build_file_directory(base_node)
+    print("true")
     print(base_node.jsonify())
 

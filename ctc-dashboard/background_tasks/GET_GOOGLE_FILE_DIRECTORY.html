@@ -7,12 +7,12 @@
 	(async () => {
 		// Begin background processing
 		const { baseLocalDirectory, pyPath } = await ipcRenderer.invoke('GET_LOCAL_FILE_DIRECTORY__REQUEST_INPUT')
-		PythonShell.run(path.join(__dirname, './python_scripts/get_local_file_directory.py'), {
+		PythonShell.run(path.join(__dirname, './python_scripts/get_google_file_directory.py'), {
 			pythonPath: path.join(__dirname, "python_scripts/ctc_env/Scripts/python.exe"),
 			args: baseLocalDirectory,
 			mode: "json",
 		}).then( results => {
-			ipcRenderer.send('GET_FILE_DIRECTORY__SEND_DIRECTORY_TO_MAIN', { status: results[0], cloudService: 'local', result: results[1] })
+			ipcRenderer.send('GET_FILE_DIRECTORY__SEND_DIRECTORY_TO_MAIN', { status: results[0], cloudService: 'local', results: results[1] })
 			close()
 		})
 	})();

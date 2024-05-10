@@ -45,7 +45,7 @@ def google_authentication():
 
     return creds
 
-def build_service(creds):
+def build_google_service(creds):
     return build("drive", "v3", credentials=creds)
 
 def build_file_directory(service):
