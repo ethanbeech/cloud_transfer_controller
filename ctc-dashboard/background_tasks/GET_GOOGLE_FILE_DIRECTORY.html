@@ -12,7 +12,7 @@
 			args: baseLocalDirectory,
 			mode: "json",
 		}).then( results => {
-			ipcRenderer.send('GET_FILE_DIRECTORY__SEND_DIRECTORY_TO_MAIN', { status: results[0], cloudService: 'local', results: results[1] })
+			ipcRenderer.send('GET_FILE_DIRECTORY__SEND_DIRECTORY_TO_MAIN', { status: results[0], cloudService: 'google', results: results[1] })
 			close()
 		})
 	})();
