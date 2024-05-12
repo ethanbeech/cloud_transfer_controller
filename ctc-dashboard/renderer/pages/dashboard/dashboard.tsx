@@ -14,7 +14,10 @@ export default function DashboardPage() {
 		// @ts-ignore
 		window.electronAPI.receiveFileDirectory(
 			(status, cloudService, fileDirectoryJSON) => {
-				console.log(status)
+				// console.log("STATUS")
+				// console.log(status)
+				// console.log(cloudService)
+				// console.log(fileDirectoryJSON)
 				if (status) {
 					const setBaseNode = setBaseNodeCalls[cloudService];
 					// @ts-ignore

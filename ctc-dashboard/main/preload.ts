@@ -19,7 +19,6 @@ class FileNode {
     } else if (this.isValuesNotJSON(constructor_values)) {
       this.children = []
     } else {
-      console.log("SUCCESS")
       // @ts-ignore
       this.children = constructor_values.children.map((child_json) => new FileNode(child_json))
     }

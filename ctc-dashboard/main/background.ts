@@ -40,7 +40,7 @@ let hiddenWindows: { [key: string]: BrowserWindow | null } = {
 
 // Get local file directory and return to the renderer
 ipcMain.on('GET_LOCAL_FILE_DIRECTORY', async (event, arg) => {
-  console.log("PROCESS START RECEIVED: A001")
+  console.log("PROCESS START RECEIVED: GET LOCAL FILE DIRECTORY")
   // TODO: Add check to ensure no current process on local
   let backgroundFileUrl = path.join(__dirname, `../background_tasks/GET_LOCAL_FILE_DIRECTORY.html`);
 
@@ -51,14 +51,14 @@ ipcMain.on('GET_LOCAL_FILE_DIRECTORY', async (event, arg) => {
   hiddenWindows["local"].webContents.openDevTools();
 
   hiddenWindows["local"].on('closed', () => {
-    console.log("CLOSED PROCESS: A001")
+    console.log("CLOSED PROCESS: GET LOCAL FILE DIRECTORY")
 		hiddenWindows["local"] = null;
 	});
 })
 
 // Get google file directory and return to the renderer
 ipcMain.on('GET_GOOGLE_FILE_DIRECTORY', async (event, arg) => {
-  console.log("PROCESS START RECEIVED: A002")
+  console.log("PROCESS START RECEIVED: GET GOOGLE FILE DIRECTORY")
   // TODO: Add check to ensure no current process on local
   let backgroundFileUrl = path.join(__dirname, `../background_tasks/GET_GOOGLE_FILE_DIRECTORY.html`);
 
@@ -69,13 +69,13 @@ ipcMain.on('GET_GOOGLE_FILE_DIRECTORY', async (event, arg) => {
   hiddenWindows["google"].webContents.openDevTools();
 
   hiddenWindows["google"].on('closed', () => {
-    console.log("CLOSED PROCESS: A002")
+    console.log("CLOSED PROCESS: GET GOOGLE FILE DIRECTORY")
 		hiddenWindows["google"] = null;
 	});
 })
 
 ipcMain.on('GET_CLOUD_CONNECTION_STATUSES', async () => {
-  console.log("PROCESS START RECEIVED: B001");
+  console.log("PROCESS START RECEIVED: GET CLOUD CONNECTION STATUSES");
   // TODO: Add check to ensure no current process on google
   let backgroundFileUrl = path.join(__dirname, '../background_tasks/GET_CLOUD_CONNECTION_STATUSES.html');
 
@@ -84,7 +84,7 @@ ipcMain.on('GET_CLOUD_CONNECTION_STATUSES', async () => {
   hiddenWindows['google'].webContents.openDevTools();
 
   hiddenWindows['google'].on('closed', () => {
-    console.log('CLOSED PROCESS: B001');
+    console.log('CLOSED PROCESS: GET CLOUD CONNECTION STATUSES');
     hiddenWindows['google'] = null;
   });
 }),
@@ -103,6 +103,7 @@ ipcMain.on('GET_FILE_DIRECTORY__SEND_DIRECTORY_TO_MAIN', async (event, args) => 
   const cloudService = args.cloudService;
   const fileDirectoryJSON = args.results;
   console.log(args)
+  console.log(fileDirectoryJSON)
   visibleWindow.webContents.send('GET_FILE_DIRECTORY__SEND_DIRECTORY_TO_RENDERER', status, cloudService, fileDirectoryJSON);
 });
 
